@@ -25,22 +25,18 @@ def color(r,g,b):
 
 class Render(object):
     #glInit
-    def __init__(self,width, height):
-
-        self.width = width
-        self.height = height
-
-        self.clearColor = color (0,0,0)
-        self.currColor = color (1,1,1)
-
-        self.glClear()
+    def __init__(self):
+        self.clearColor = color(0,0,0)
+        self.viewPortX = 0
+        self.viewPortY = 0
+        self.viewPortWidth = 0
+        self.viewPortHeight = 0
 	
     def glCreateWindow(self, width, height):
         #glCreateWindows (dimension de la imagen)
         self.width = width
         self.height = height
         self.glClear()
-    
 
     def glViewPort(self, x, y, width, height):
         #glViewPort (define area)
@@ -50,17 +46,16 @@ class Render(object):
         self.viewPortHeight = height
         self.drawVPS()
 
-        
     def drawVPS(self):
         # Función para dibujar el cuadrado del viewPort
         for x in range(self.viewPortX, self.viewPortX + self.viewPortWidth):
             for y in range(self.viewPortY, self.viewPortY + self.viewPortHeight):
                 self.pixels[x][y] = self.currColor
         
-
     def glClearColor(self, r, g, b):
-        #glCreateWindow (r,g,b)
+        # ClearColor(r,g,b)
         self.clearColor= color(r,g,b)
+        self.glClear()
 
     def glColor(self, r, g, b):
         #glPoint (r,g,b)
@@ -69,14 +64,22 @@ class Render(object):
     def glClear(self):
         #glClear
         self.pixels = [[self.clearColor for y in range(self.height)] for x in range(self.width)]
+        
+    def glCenterPoint(self, x, y, clr = None): 
+        #glpoint (cambiar el color de un punto de la pantalla)
+        if( (-1<= x <= 1) and (-1<= y <= 1)):
+            newX = (x +1) * (self.viewPortWidth // 2) + self.viewPortX
+            newY = (y +1) * (self.viewPortHeight // 2) + self.viewPortY
+            self.pixels[newX][newY] = clr or self.currColor 
+    
+    def glPointS (self, x, y, clr = None):
+        #glPointS (x,y) liena de puntos-- Funcion de prueba/experimental
+        if (0 <= x < self.viewPortWidth) and (0 <= y < self.viewPortHeight) :
+            self.pixels[x+self.viewPortX][y+self.viewPortY] = clr or self.currColor
 
-    def glPoint (self, x, y, clr = None):
-        #glPoint (x,y)
-        if (0 < x < self.width) and (0 <= y < self.height):
-            self.pixels[x][y] = clr or self.currColor
 
     def glFinish(self, filename):
-        #glFinish
+        #glFinish  escribe el archivo de imagen
         with open(filename, "wb") as file:
             # Header
             file.write(bytes('B'.encode('ascii')))
@@ -102,3 +105,4 @@ class Render(object):
             for y in range(self.height):
                 for x in range(self.width):
                     file.write(self.pixels[x][y])
+            file.close()
